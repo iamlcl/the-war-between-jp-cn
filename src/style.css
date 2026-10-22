@@ -84,3 +84,58 @@ body.map-fullscreen .map-card-fullscreen .leaflet-control-layers{margin-top:181p
   body.map-fullscreen .map-card-fullscreen .leaflet-control-layers{margin-top:185px}
   body.map-fullscreen .map-card-fullscreen .map-disclaimer{left:10px;bottom:9px;max-width:calc(100% - 20px);font-size:10px;padding:7px 9px}
 }
+
+/* Fullscreen contrast: keep each information band readable over the light vector map. */
+body.map-fullscreen .map-card-fullscreen .card-header,
+body.map-fullscreen .map-card-fullscreen .legend,
+body.map-fullscreen .map-card-fullscreen .faction-legend,
+body.map-fullscreen .map-card-fullscreen .army-legend{
+  background:rgba(5,18,26,.9);
+  border-color:rgba(210,232,226,.22);
+  text-shadow:0 1px 2px rgba(0,0,0,.75);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px)
+}
+body.map-fullscreen .map-card-fullscreen .card-header{border-bottom:1px solid rgba(210,232,226,.18)}
+body.map-fullscreen .map-card-fullscreen .legend{border-bottom:1px solid rgba(210,232,226,.16);color:#e4eeeb}
+body.map-fullscreen .map-card-fullscreen .faction-legend{border-bottom:1px solid rgba(210,232,226,.16);color:#e4eeeb}
+body.map-fullscreen .map-card-fullscreen .army-legend{border-bottom:1px solid rgba(210,232,226,.16);color:#e4eeeb}
+body.map-fullscreen .map-card-fullscreen .legend span,
+body.map-fullscreen .map-card-fullscreen .faction-legend span,
+body.map-fullscreen .map-card-fullscreen .army-legend span{color:#e4eeeb}
+body.map-fullscreen .map-card-fullscreen .faction-legend .faction-legend-note,
+body.map-fullscreen .map-card-fullscreen .army-legend .army-legend-note{color:#b9c9c7}
+body.map-fullscreen .map-card-fullscreen .army-summary{color:#cbd8d5}
+body.map-fullscreen .map-card-fullscreen .army-summary b{color:#ffe1a0}
+body.map-fullscreen .map-card-fullscreen .map-disclaimer{background:rgba(5,18,26,.9);border-color:rgba(210,232,226,.3);color:#eef5f1;box-shadow:0 5px 18px rgba(0,0,0,.25);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+body.map-fullscreen .leaflet-control-layers,
+body.map-fullscreen .leaflet-control-zoom a,
+body.map-fullscreen .leaflet-control-attribution,
+body.map-fullscreen .leaflet-control-scale-line{background:rgba(5,18,26,.9)!important;border-color:rgba(38,68,76,.7)!important;color:#f3ead9!important;box-shadow:0 3px 12px rgba(0,0,0,.28)}
+body.map-fullscreen .leaflet-control-layers label{color:#eef5f1!important;text-shadow:none;font-weight:600}
+body.map-fullscreen .leaflet-control-layers-separator{border-top-color:rgba(38,68,76,.45)}
+body.map-fullscreen .leaflet-control-attribution a{color:#d6e9e4!important}
+body.map-fullscreen .historical-province-label,
+body.map-fullscreen .historical-admin-label{background:rgba(5,18,26,.9);border-color:rgba(245,205,122,.72);color:#ffe9b0;text-shadow:none;box-shadow:0 3px 10px rgba(0,0,0,.35)}
+body.map-fullscreen .map-card-fullscreen .leaflet-control-layers{margin-top:228px}
+@media (max-width:700px){body.map-fullscreen .map-card-fullscreen .leaflet-control-layers{margin-top:255px}}
+
+/* On a narrow fullscreen viewport the toolbar must not squeeze the title into a
+   tiny column. Keep the controls on their own row and stack the information
+   bands below the title so every label remains readable. */
+@media (max-width:700px){
+  body.map-fullscreen .map-card-fullscreen .card-header{display:block;height:116px;padding:10px 16px 8px}
+  body.map-fullscreen .map-card-fullscreen .card-header>div:first-child{width:100%;min-width:0;padding:30px 0 0}
+  body.map-fullscreen .map-card-fullscreen .card-header h3{width:auto;max-width:100%;margin-top:6px;font-size:17px;line-height:1.3;white-space:normal}
+  body.map-fullscreen .map-card-fullscreen .history-layer-badge{font-size:9px;margin-top:4px}
+  body.map-fullscreen .map-card-fullscreen .map-tools{position:absolute;top:9px;right:10px;gap:4px}
+  body.map-fullscreen .map-card-fullscreen .map-tools .tool-btn{width:28px;height:28px;padding:0;font-size:13px}
+  body.map-fullscreen .map-card-fullscreen .admin-level-control{font-size:0;gap:0}
+  body.map-fullscreen .map-card-fullscreen .admin-level-control select{width:78px;font-size:10px;padding:5px 3px}
+  body.map-fullscreen .map-card-fullscreen .legend{top:116px}
+  body.map-fullscreen .map-card-fullscreen .faction-legend{top:192px}
+  body.map-fullscreen .map-card-fullscreen .army-legend{top:258px}
+  body.map-fullscreen .map-card-fullscreen .faction-legend .faction-legend-note,
+  body.map-fullscreen .map-card-fullscreen .army-legend .army-legend-note{display:none}
+  body.map-fullscreen .map-card-fullscreen .leaflet-control-layers{margin-top:385px}
+}
