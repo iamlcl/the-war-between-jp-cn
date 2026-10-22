@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="1937—1945年中日战场月度控制区示意地图" />
+    <link rel="icon" href="data:," />
+    <title>战局经纬｜抗日战争月度地图</title>
+    <link rel="stylesheet" href="./vendor/leaflet/leaflet.css" />
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div>
+            <p class="eyebrow">历史战局可视化 · 1937—1945</p>
+            <h1>战局经纬</h1>
+          </div>
+        </div>
+        <div class="topbar-meta">
+          <span class="status-dot"></span>
+          <span>月度示意档案</span>
+          <a href="./report.md" target="_blank" rel="noreferrer">阅读完整报告 ↗</a>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero-grid">
+          <div class="hero-copy">
+            <p class="eyebrow">A MAP OF A FRACTURED FRONT</p>
+            <h2>把九十九个月的战局，<em>放回地图上。</em></h2>
+            <p class="hero-lede">拖动时间轴，查看日军及伪政权、中国国民政府、敌后根据地与争夺区如何在城市、铁路和乡村之间拉扯。</p>
+          </div>
+          <div class="metric-strip" aria-label="报告概览">
+            <div class="metric"><strong>99</strong><span>个月份</span></div>
+            <div class="metric"><strong>4</strong><span>控制层级</span></div>
+            <div class="metric"><strong>1937.07</strong><span>全国抗战起点</span></div>
+            <div class="metric"><strong>1945.09</strong><span>中国战区受降</span></div>
+          </div>
+        </section>
+
+        <section class="control-deck" aria-label="时间控制">
+          <div class="date-readout">
+            <span class="date-kicker">CURRENT MONTH</span>
+            <strong id="currentMonthLabel" aria-live="polite">1937年7月</strong>
+            <span id="stageLabel" class="stage-label" aria-live="polite">平津—淞沪扩大阶段</span>
+          </div>
+          <div class="timeline-control">
+            <div class="timeline-topline">
+              <button id="prevMonth" class="icon-btn" type="button" aria-label="上一个月">←</button>
+              <button id="playButton" class="play-btn" type="button" aria-pressed="false"><span class="play-icon">▶</span><span id="playText">播放时间轴</span></button>
+              <button id="nextMonth" class="icon-btn" type="button" aria-label="下一个月">→</button>
+            </div>
+            <div class="slider-wrap">
+              <input id="monthSlider" type="range" min="0" max="98" value="0" aria-label="选择月份" />
+              <div class="range-labels"><span>1937.07</span><span>1940</span><span>1943</span><span>1945.09</span></div>
+            </div>
+          </div>
+          <div class="jump-control">
+            <label for="monthSelect">跳转月份</label>
+            <select id="monthSelect"></select>
+          </div>
+        </section>
+
+        <section class="workspace-grid">
+          <article class="map-card">
+            <div class="card-header">
+              <div>
+                <p class="eyebrow">CONTROL SNAPSHOT</p>
+                <h3>真实地理底图 · <span id="mapMonthTitle">1937年7月</span></h3>
+              </div>
+              <div class="map-tools" aria-label="地图工具">
+                <button type="button" class="tool-btn" id="zoomOut" aria-label="缩小地图">−</button>
+                <button type="button" class="tool-btn" id="zoomReset" aria-label="重置地图缩放">1×</button>
+                <button type="button" class="tool-btn" id="zoomIn" aria-label="放大地图">＋</button>
+              </div>
+            </div>
+            <div class="legend" aria-label="地图图例">
+              <span><i class="legend-swatch japan"></i>日军／伪政权主要控制</span>
+              <span><i class="legend-swatch partial"></i>日军城市／铁路控制</span>
+              <span><i class="legend-swatch national"></i>国民政府及中国军队</span>
+              <span><i class="legend-swatch base"></i>敌后根据地／游击区</span>
+              <span><i class="legend-swatch contested"></i>正面争夺区</span>
+            </div>
+            <div class="map-frame">
+              <div id="leafletMap" role="application" aria-label="抗日战争月度控制区真实地理地图"></div>
+              <div id="mapLoading" class="map-loading">正在加载本地历史矢量边界…</div>
+            </div>
+            <p class="map-disclaimer"><span>ⓘ</span> 本地图不调用在线瓦片；地图由本地 Leaflet 组件渲染 GeoJSON 矢量边界。现代省界只作地理定位，颜色是按月的历史控制判断；省内很多地区是“城市／铁路控制”或争夺区，不等同于整省行政占领。</p>
+          </article>
+
+          <aside class="insight-rail">
+            <section class="insight-card control-card">
+              <div class="card-header compact"><div><p class="eyebrow">LAND CONTROL</p><h3>本月控制快照</h3></div><span class="confidence-pill">定性</span></div>
+              <div id="controlRows" class="control-rows" aria-live="polite"></div>
+            </section>
+            <section class="insight-card event-card">
+              <div class="card-header compact"><div><p class="eyebrow">FIELD NOTES</p><h3>战役与节点</h3></div><span id="eventCount" class="event-count">0 条</span></div>
+              <div id="eventList" class="event-list" aria-live="polite"></div>
+            </section>
+            <section class="insight-card phase-card">
+              <p class="eyebrow">PHASE CONTEXT</p>
+              <h3 id="phaseTitle">平津—淞沪扩大阶段</h3>
+              <p id="phaseSummary"></p>
+              <div class="phase-footer"><span id="phaseRange">1937.07 — 1937.09</span><span class="phase-arrow">↗</span></div>
+            </section>
+          </aside>
+        </section>
+
+        <section class="month-log-section">
+          <div class="section-heading"><div><p class="eyebrow">MONTHLY LOG</p><h2>从卢沟桥到受降</h2></div><p>每一格都是一个月；点击即可定位地图。</p></div>
+          <div id="monthLog" class="month-log"></div>
+        </section>
+      </main>
+
+      <footer class="footer"><span>战局经纬 · 基于《抗日战争（1931—1945）月度战局与控制区报告》</span><span>史料口径：城市／交通线／据点／根据地 · 仅作历史研究示意</span></footer>
+    </div>
+    <script src="./vendor/leaflet/leaflet.js"></script>
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,209 @@
+// 月度控制区示意数据（1937-07 至 1945-09）。
+// 这些多边形用于展示城市、交通线与区域控制的相对关系，不代表可核验的县级边界或平方公里面积。
+
+const stageDefinitions = [
+  {
+    id: '1937-a', start: '1937-07', end: '1937-09', label: '平津—淞沪扩大阶段',
+    summary: '日军已控制满洲、热河及平津交通节点，上海外围进入大规模争夺；中国仍控制华北广大乡村、西南和西北后方。',
+    japan: ['满洲国（城市、铁路与港口）', '北平、天津及平津铁路', '上海北部与港口外围争夺'],
+    national: ['华北未驻日军的县乡', '南京、武汉及西南西北后方'],
+    base: ['晋察冀、晋西北等敌后活动区'],
+    contested: ['淞沪、山西北部、河北铁路沿线'],
+    events: [
+      { date: '1937-07-07', name: '卢沟桥事变', place: '北平西南', type: 'turning' },
+      { date: '1937-08-13', name: '淞沪会战开始', place: '上海', type: 'battle' },
+      { date: '1937-09-25', name: '平型关战斗', place: '山西灵丘', type: 'battle' }
+    ]
+  },
+  {
+    id: '1937-b', start: '1937-10', end: '1937-12', label: '华北、华东城市失守阶段',
+    summary: '日军取得山西北部和华东交通优势，上海、南京相继失守；中国政府和主力向武汉、重庆及西部转移。',
+    japan: ['平津—太原铁路节点', '上海、苏南、南京及沪宁线', '长江下游港口与航运节点'],
+    national: ['武汉及长江上游', '西南、西北大后方', '华北和华东未驻军乡村'],
+    base: ['晋察冀、晋绥、山东敌后活动区'],
+    contested: ['晋西、鲁南、皖北、苏北'],
+    events: [
+      { date: '1937-11-08', name: '太原失守', place: '山西太原', type: 'battle' },
+      { date: '1937-11-12', name: '上海失守', place: '上海', type: 'battle' },
+      { date: '1937-12-13', name: '南京失守', place: '南京', type: 'turning' }
+    ]
+  },
+  {
+    id: '1938-a', start: '1938-01', end: '1938-05', label: '徐州会战阶段',
+    summary: '日军沿津浦、陇海方向推进并于5月攻占徐州；台儿庄局部胜利没有改变交通线和城市控制的大趋势。',
+    japan: ['津浦线北段及华北平原城市', '南京—蚌埠—徐州方向交通线', '上海、南京及长江下游'],
+    national: ['武汉、郑州以西及西南后方', '徐州周边部分阵地和乡村'],
+    base: ['山东、苏北、皖北敌后活动区'],
+    contested: ['鲁南、徐州、陇海线东段'],
+    events: [
+      { date: '1938-03-16', name: '台儿庄战役', place: '山东台儿庄', type: 'battle' },
+      { date: '1938-04-07', name: '台儿庄反攻胜利', place: '山东台儿庄', type: 'battle' },
+      { date: '1938-05-19', name: '徐州失守', place: '江苏徐州', type: 'turning' }
+    ]
+  },
+  {
+    id: '1938-b', start: '1938-06', end: '1938-10', label: '武汉、广州失守阶段',
+    summary: '日军控制长江中下游、武汉和广州等核心节点；中国保有西南、西北、湘西和赣南腹地。',
+    japan: ['上海—南京—武汉长江交通线', '广州、珠江三角洲及沿海港口', '华北平原铁路网'],
+    national: ['重庆、成都、昆明、贵阳及西南后方', '武汉外围以西、湘西、赣南'],
+    base: ['太行、晋察冀、山东和华中敌后区'],
+    contested: ['武汉外围、鄂西、赣北、湘北'],
+    events: [
+      { date: '1938-06-09', name: '花园口决堤', place: '河南郑州附近', type: 'event' },
+      { date: '1938-08-22', name: '万家岭战斗', place: '江西德安', type: 'battle' },
+      { date: '1938-10-21', name: '广州失守', place: '广东广州', type: 'turning' },
+      { date: '1938-10-25', name: '武汉失守', place: '湖北武汉', type: 'turning' }
+    ]
+  },
+  {
+    id: '1938-c', start: '1938-11', end: '1941-11', label: '相持与敌后战争阶段',
+    summary: '正面战线相对稳定。日军掌握东部城市、港口和铁路，中国后方保持完整，敌后根据地与日伪据点交错。',
+    japan: ['华北铁路—城市链', '上海、南京、武汉、广州及长江航线', '沿海港口和主要公路'],
+    national: ['西南、西北、湘西、赣南及滇黔桂后方', '部分正面战区外围'],
+    base: ['晋察冀、晋冀鲁豫、山东、苏北、华中新四军根据地'],
+    contested: ['华北乡村、鲁南、苏北、皖北、鄂西、湘北'],
+    events: [
+      { date: '1939-03-27', name: '南昌失守', place: '江西南昌', type: 'battle' },
+      { date: '1939-09-14', name: '第一次长沙会战', place: '湖南长沙', type: 'battle' },
+      { date: '1940-03-30', name: '汪伪南京政权成立', place: '南京', type: 'political' },
+      { date: '1940-08-20', name: '百团大战开始', place: '华北铁路沿线', type: 'battle' },
+      { date: '1941-03-15', name: '上高会战', place: '江西上高', type: 'battle' },
+      { date: '1941-09-06', name: '第二次长沙会战', place: '湖南长沙', type: 'battle' }
+    ]
+  },
+  {
+    id: '1941-b', start: '1941-12', end: '1942-06', label: '太平洋战争与外线断裂阶段',
+    summary: '香港、缅甸相继失守，滇缅公路中断；中国本土控制格局变化有限，但西南补给和滇西成为前线。',
+    japan: ['香港、华南港口', '东部城市与铁路网络', '缅甸南部和中部（外线）'],
+    national: ['重庆、云南、贵州、四川和西北后方', '滇西怒江防线'],
+    base: ['华北、山东、华中敌后根据地'],
+    contested: ['浙赣铁路、滇西边境、华北乡村'],
+    events: [
+      { date: '1941-12-25', name: '香港失守', place: '香港', type: 'turning' },
+      { date: '1942-01-04', name: '第三次长沙会战结束', place: '湖南长沙', type: 'battle' },
+      { date: '1942-03-08', name: '仰光失守', place: '缅甸仰光', type: 'turning' },
+      { date: '1942-05-15', name: '浙赣会战', place: '浙江—江西', type: 'battle' }
+    ]
+  },
+  {
+    id: '1942-c', start: '1942-07', end: '1943-12', label: '战线稳定与敌后消耗阶段',
+    summary: '日军继续控制城市、港口和铁路，清乡与扫荡加剧；国民政府西南西北后方和中共敌后根据地仍在。',
+    japan: ['东部沿海、长江中下游和华北铁路', '武汉、长沙、广州、南京等城市节点'],
+    national: ['西南、西北、湘西、滇西及部分正面战区'],
+    base: ['晋察冀、山东、华中、苏北等敌后区'],
+    contested: ['华北乡村、鄂西、湘北、赣北'],
+    events: [
+      { date: '1943-05-05', name: '鄂西会战', place: '湖北鄂西', type: 'battle' },
+      { date: '1943-11-02', name: '常德会战', place: '湖南常德', type: 'battle' },
+      { date: '1943-12-03', name: '常德收复', place: '湖南常德', type: 'battle' }
+    ]
+  },
+  {
+    id: '1944', start: '1944-01', end: '1944-12', label: '一号作战扩张阶段',
+    summary: '日军贯通平汉—粤汉—湘桂线，取得河南、湖南、广西主要城市和铁路，但乡村与西南腹地仍未稳定控制。',
+    japan: ['郑州、许昌、洛阳、长沙、衡阳、桂林、柳州铁路节点', '平汉—粤汉—湘桂线', '既有华北华中沿海占领区'],
+    national: ['重庆、贵州、云南、四川、陕西甘肃及湘西后方', '日军交通线外的部分乡村'],
+    base: ['华北、山东、华中敌后根据地'],
+    contested: ['河南乡村、湘西、广西西部、黔桂边缘'],
+    events: [
+      { date: '1944-04-17', name: '豫中会战／一号作战开始', place: '河南', type: 'turning' },
+      { date: '1944-06-05', name: '长沙失守', place: '湖南长沙', type: 'turning' },
+      { date: '1944-06-22', name: '衡阳保卫战', place: '湖南衡阳', type: 'battle' },
+      { date: '1944-08-08', name: '衡阳失守', place: '湖南衡阳', type: 'turning' },
+      { date: '1944-11-10', name: '桂林、柳州失守', place: '广西', type: 'turning' }
+    ]
+  },
+  {
+    id: '1945-a', start: '1945-01', end: '1945-06', label: '中国反攻与日军收缩阶段',
+    summary: '滇西缅北反攻改善外援通道，湘西会战击退日军；日军仍守主要城市和铁路，但战略主动权下降。',
+    japan: ['华北、华中主要城市和铁路', '衡阳、长沙、桂林、柳州等节点（部分反复）'],
+    national: ['西南、西北、湘西、滇西及中国大后方'],
+    base: ['华北、山东、华中敌后根据地'],
+    contested: ['湘西、滇西、华北铁路外沿'],
+    events: [
+      { date: '1945-03-01', name: '滇西缅北反攻推进', place: '滇西—缅北', type: 'battle' },
+      { date: '1945-04-09', name: '湘西会战开始', place: '湖南芷江', type: 'battle' },
+      { date: '1945-06-07', name: '湘西会战结束', place: '湖南芷江', type: 'battle' }
+    ]
+  },
+  {
+    id: '1945-b', start: '1945-07', end: '1945-09', label: '投降与受降阶段',
+    summary: '日本宣布无条件投降，日军和伪政权控制终止；城市接收与敌后权力转换同步发生。',
+    japan: ['投降前仍驻守东部城市、港口、铁路的日军据点'],
+    national: ['国民政府准备并执行主要城市、港口和交通线受降'],
+    base: ['中共根据地及其接收的敌后城市、县乡'],
+    contested: ['东北、华北和华中接收区；受降后的地方权力真空'],
+    events: [
+      { date: '1945-08-08', name: '苏联对日宣战并进攻东北', place: '东北', type: 'turning' },
+      { date: '1945-08-15', name: '日本宣布无条件投降', place: '东京／中国战区', type: 'turning' },
+      { date: '1945-09-02', name: '日本签署投降书', place: '东京湾', type: 'turning' },
+      { date: '1945-09-09', name: '中国战区受降', place: '南京', type: 'turning' }
+    ]
+  }
+];
+
+function monthRange(start, end) {
+  const [sy, sm] = start.split('-').map(Number);
+  const [ey, em] = end.split('-').map(Number);
+  const result = [];
+  let y = sy;
+  let m = sm;
+  while (y < ey || (y === ey && m <= em)) {
+    result.push(`${y}-${String(m).padStart(2, '0')}`);
+    m += 1;
+    if (m > 12) { y += 1; m = 1; }
+  }
+  return result;
+}
+
+const months = monthRange('1937-07', '1945-09').map((month) => {
+  const stage = stageDefinitions.find((item) => month >= item.start && month <= item.end);
+  const events = stage.events.filter((event) => event.date.startsWith(month));
+  return {
+    month,
+    stageId: stage.id,
+    stageLabel: stage.label,
+    summary: stage.summary,
+    japan: stage.japan,
+    national: stage.national,
+    base: stage.base,
+    contested: stage.contested,
+    events
+  };
+});
+
+// 采用经纬度的示意多边形，供 SVG/Leaflet/MapLibre 组件绘制。
+// 坐标为 [经度, 纬度]，仅表示战区关系；没有县级边界含义。
+const schematicRegions = [
+  { id: 'manchuria', name: '满洲／东北（1937年前既已被日方控制）', owner: 'japan', coordinates: [[119, 39], [124, 39], [131, 43], [131, 49], [124, 53], [119, 50]] },
+  { id: 'north_rail', name: '华北城市—铁路带', owner: 'japan', coordinates: [[111, 34], [119, 34], [121, 40], [118, 42], [111, 40]] },
+  { id: 'east_corridor', name: '华东沿海与长江下游', owner: 'japan', coordinates: [[115, 27], [123, 27], [124, 33], [121, 35], [115, 32]] },
+  { id: 'central_corridor', name: '武汉—长江中游交通带', owner: 'japan', coordinates: [[109, 27], [116, 27], [117, 32], [112, 33], [108, 30]] },
+  { id: 'south_coast', name: '华南沿海与珠江三角洲', owner: 'japan', coordinates: [[108, 20], [117, 20], [118, 25], [112, 26], [108, 23]] },
+  { id: 'southwest', name: '西南大后方', owner: 'national', coordinates: [[97, 21], [109, 21], [112, 29], [108, 33], [99, 32], [95, 27]] },
+  { id: 'northwest', name: '西北大后方', owner: 'national', coordinates: [[80, 32], [101, 32], [108, 36], [108, 42], [94, 42], [82, 40]] },
+  { id: 'north_base', name: '华北敌后根据地示意', owner: 'base', coordinates: [[105, 35], [116, 35], [118, 40], [112, 42], [106, 40]] },
+  { id: 'east_base', name: '山东、苏北与华中敌后示意', owner: 'base', coordinates: [[113, 29], [121, 29], [121, 35], [116, 36], [112, 33]] },
+  { id: 'contested', name: '正面战场与交通线争夺区', owner: 'contested', coordinates: [[106, 27], [116, 27], [119, 32], [116, 36], [108, 35], [104, 31]] }
+];
+
+
+// 每个阶段对示意区域的显示状态。'hidden' 表示该月不突出显示该区域，
+// owner 值仅用于图例和颜色，不代表完整行政主权。
+const stageRegionStates = {
+  '1937-a': { manchuria:'japan', north_rail:'japan', east_corridor:'contested', central_corridor:'national', south_coast:'national', southwest:'national', northwest:'national', north_base:'base', east_base:'hidden', contested:'contested' },
+  '1937-b': { manchuria:'japan', north_rail:'japan', east_corridor:'japan', central_corridor:'contested', south_coast:'national', southwest:'national', northwest:'national', north_base:'base', east_base:'base', contested:'contested' },
+  '1938-a': { manchuria:'japan', north_rail:'japan', east_corridor:'japan', central_corridor:'contested', south_coast:'national', southwest:'national', northwest:'national', north_base:'base', east_base:'contested', contested:'contested' },
+  '1938-b': { manchuria:'japan', north_rail:'japan', east_corridor:'japan', central_corridor:'japan', south_coast:'japan', southwest:'national', northwest:'national', north_base:'base', east_base:'base', contested:'contested' },
+  '1938-c': { manchuria:'japan', north_rail:'japan', east_corridor:'japan', central_corridor:'japan', south_coast:'japan', southwest:'national', northwest:'national', north_base:'base', east_base:'base', contested:'contested' },
+  '1941-b': { manchuria:'japan', north_rail:'japan', east_corridor:'japan', central_corridor:'japan', south_coast:'japan', southwest:'national', northwest:'national', north_base:'base', east_base:'base', contested:'contested' },
+  '1942-c': { manchuria:'japan', north_rail:'japan', east_corridor:'japan', central_corridor:'japan', south_coast:'japan', southwest:'national', northwest:'national', north_base:'base', east_base:'base', contested:'contested' },
+  '1944': { manchuria:'japan', north_rail:'japan', east_corridor:'japan', central_corridor:'japan', south_coast:'japan', southwest:'national', northwest:'national', north_base:'base', east_base:'base', contested:'japan' },
+  '1945-a': { manchuria:'japan', north_rail:'japan', east_corridor:'japan', central_corridor:'japan', south_coast:'japan', southwest:'national', northwest:'national', north_base:'base', east_base:'base', contested:'national' },
+  '1945-b': { manchuria:'contested', north_rail:'contested', east_corridor:'national', central_corridor:'national', south_coast:'national', southwest:'national', northwest:'national', north_base:'base', east_base:'base', contested:'contested' }
+};
+
+const eventIndex = months.flatMap((item) => item.events.map((event) => ({ ...event, month: item.month })));
+
+export { stageDefinitions, months, schematicRegions, stageRegionStates, eventIndex };
+export default months;
