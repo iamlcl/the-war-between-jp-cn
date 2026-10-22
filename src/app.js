@@ -78,7 +78,7 @@ function getState(name, stageId) {
 }
 function stateDescription(state, month) {
   const base = stateLabels[state];
-  if (state === 'partial') return `${base}。本月省级多边形只用于定位，史料确认的是主要城市、铁路、港口与驻军节点。`;
+  if (state === 'partial') return `${base}。地图颜色只用于定位，史料确认的重点是城市、铁路、港口和驻军节点。`;
   if (state === 'preexisting') return `${base}；台湾不计入1937年以后新增占领。`;
   if (state === 'base') return `${base}。根据地与日伪据点可能在同一省内重叠。`;
   return `${base}。${month.summary}`;
@@ -89,7 +89,7 @@ function styleFeature(feature) {
 }
 function popupHtml(feature, state) {
   const name = feature.properties.name;
-  return `<strong>${name}</strong><br><span style="color:${colors[state]}">${stateLabels[state]}</span><hr><small>${stateDescription(state, months[index])}</small><br><small>数据层级：现行省级 GeoJSON + 月度战局定性资料；不表示该省全部县乡均由同一方行政控制。</small>`;
+  return `<strong>${name}</strong><br><span style="color:${colors[state]}">${stateLabels[state]}</span><hr><small>${stateDescription(state, months[index])}</small><br><small>这里显示的是主要城市、铁路、港口和乡村战线的总体情况，不表示该省每个县乡都由同一方控制。</small>`;
 }
 function onEachProvince(feature, layer) {
   const state = getState(feature.properties.name, months[index].stageId);
@@ -112,14 +112,14 @@ function historicalProvinceStatusLabel(status) {
 }
 function historicalProvincePopup(properties) {
   const status = historicalProvinceStatusLabel(properties.geometryStatus);
-  const modernName = properties.modernName ? `现代定位：${properties.modernName}<br>` : '';
+  const modernName = properties.modernName ? `今天地图上的位置：${properties.modernName}<br>` : '';
   const source = properties.source ? `<br><small>几何来源：${properties.source}</small>` : '';
   const sourcePeriod = properties.sourcePeriod ? `<br><small>几何年代：${properties.sourcePeriod}</small>` : '';
   const sourceRepo = properties.sourceRepo ? `<br><small>来源仓库：${properties.sourceRepo}</small>` : '';
   const basis = properties.geometryStatus === 'schematic'
-    ? '边界来源口径：1932—1944历史省级示意轮廓；并非逐年测绘，1937精确时序仍需按CHGIS/同期行政图核验。'
-    : '边界来源口径：历史行政沿革注册表；当前几何为现代定位代理或近似复原，待接入并核验CHGIS时序边界。';
-  return `<strong>${properties.historicalName}</strong><br><small>历史政权：${properties.authority}</small><br><small>存在区间：${properties.from || '1937-07'}—${properties.to || '1945-09'}</small><br><small>几何状态：${status}</small><br><small>${modernName}${properties.note || ''}</small>${sourcePeriod}${source}${sourceRepo}<hr><small>${basis}</small><br><small>省界层只表达历史分区位置；控制颜色、战役点和势力节点分别来自独立史料层。</small>`;
+    ? '这条省界是1932—1944年间的历史轮廓示意，并非逐年测绘；1937年的精确变化仍需逐年核对。'
+    : '这里的轮廓用于把历史名称放回今天的地图位置，不能当作精确的历史县界。';
+  return `<strong>${properties.historicalName}</strong><br><small>当时所属：${properties.authority}</small><br><small>使用时间：${properties.from || '1937-07'}—${properties.to || '1945-09'}</small><br><small>边界说明：${status}</small><br><small>${modernName}${properties.note || ''}</small>${sourcePeriod}${source}${sourceRepo}<hr><small>${basis}</small><br><small>颜色、战役标记和兵力图标分别说明控制情况、事件位置和兵力分布。</small>`;
 }
 function historicalProvinceStyle(feature) {
   const approximate = feature.properties.geometryStatus !== 'modern-remap';
@@ -234,7 +234,7 @@ function renderEventMarkers(month) {
     L.geoJSON(warSitesGeoJson, {
       filter: (feature) => feature.properties.month === month.month,
       pointToLayer: (feature, latlng) => L.circleMarker(latlng, { radius: 7, color: '#fff7d8', weight: 2, fillColor: '#efc875', fillOpacity: .95, className: 'battle-site-marker' }),
-      onEachFeature: (feature, layer) => layer.bindPopup(`<strong>${feature.properties.name}</strong><br><small>${feature.properties.date} · ${feature.properties.place}</small><br><small>事件定位点，非战役边界；证据等级 ${feature.properties.confidence || 'A'}</small>`)
+      onEachFeature: (feature, layer) => layer.bindPopup(`<strong>${feature.properties.name}</strong><br><small>${feature.properties.date} · ${feature.properties.place}</small><br><small>地图上的事件位置，不代表完整战役范围；史料把握度 ${feature.properties.confidence || 'A'}</small>`)
     }).addTo(eventLayer);
     return;
   }
@@ -256,7 +256,7 @@ function renderHistoricalAdmin(month) {
       color: '#314e58', weight: 1.5, fillColor: '#f5e5b7', fillOpacity: .92, className: `historical-admin-marker ${node.level}`
     });
     marker.bindTooltip(`${node.historicalName} · ${level}`, { permanent: node.level === 'special-city', sticky: true, direction: 'right', offset: [5, 0], className: 'historical-admin-label' });
-    marker.bindPopup(`<strong>${node.historicalName}</strong><br><small>层级：${level}</small><br><small>当时所属：${node.admin1937}</small><br><small>现代定位：${node.modernName}</small><hr><small>${node.note}</small><br><small>来源：${node.source}；置信度 ${node.confidence}</small>`);
+    marker.bindPopup(`<strong>${node.historicalName}</strong><br><small>当时的行政层级：${level}</small><br><small>当时所属：${node.admin1937}</small><br><small>今天地图上的位置：${node.modernName}</small><hr><small>${node.note}</small><br><small>资料来源：${node.source}；把握度 ${node.confidence}</small>`);
     marker.addTo(historicalAdminLayer);
   });
 }
@@ -283,7 +283,7 @@ function equipmentHtml(site) {
 }
 function forcePopupHtml(site, style) {
   const count = forceUnitCount(site);
-  return `<strong>${site.label} · ${site.historicalName}</strong><br><span style="color:${style.color}">${style.label}</span><div class="force-popup"><div><b>编制</b>${site.unit || '历史节点部队'}</div><div><b>兵力估算</b><span class="force-strength">${forceStrengthLabel(site)}</span> <em>（${site.confidence || 'C'}级）</em></div><div><b>装备特征</b><span class="force-popup-equipment">${equipmentHtml(site) || '未列'}</span></div><div><b>图示</b>${count} 个兵员符号；图标大小与数量表达相对量级</div></div><hr><small>${site.role}</small><br><small>${site.forceNote || '节点位置只表达指挥与驻军分布，不代表点位覆盖整个区域。'}</small><br><small>历史节点：${site.from}—${site.to}；${site.source}</small><br><small>兵力数字是按编制与战区史料整理的范围估算，不是逐月精确统计。</small>`;
+  return `<strong>${site.label} · ${site.historicalName}</strong><br><span style="color:${style.color}">${style.label}</span><div class="force-popup"><div><b>部队</b>${site.unit || '历史节点部队'}</div><div><b>估算兵力</b><span class="force-strength">${forceStrengthLabel(site)}</span> <em>（${site.confidence || 'C'}级）</em></div><div><b>常见装备</b><span class="force-popup-equipment">${equipmentHtml(site) || '未列'}</span></div><div><b>图标说明</b>${count} 个人形；数量和大小用于比较兵力规模</div></div><hr><small>${site.role}</small><br><small>${site.forceNote || '这里是指挥或驻军集中地，不代表整座城市或整个省份都驻有这些兵力。'}</small><br><small>活动时间：${site.from}—${site.to}；${site.source}</small><br><small>数字来自公开战史整理，仅供数量级比较。</small>`;
 }
 function factionMarkerIcon(site) {
   const style = factionStyles[site.faction] || factionStyles.nationalist;
@@ -301,7 +301,7 @@ function renderFactionLayer(month) {
     L.polyline(track.coords, {
       className: `faction-track ${track.faction}`,
       color: style.color, weight: 3, opacity: .82, dashArray: '8 10', lineCap: 'round'
-    }).bindTooltip(`${track.label}<br><small>仅表示指挥／推进轴线，不是行政边界</small>`, { sticky: true, className: 'faction-track-tip' }).addTo(factionLayer);
+    }).bindTooltip(`${track.label}<br><small>表示部队活动和推进的大致方向，不是行政边界</small>`, { sticky: true, className: 'faction-track-tip' }).addTo(factionLayer);
   });
   factionSites.filter((site) => monthIsBetween(month.month, site.from, site.to)).forEach((site) => {
     const style = factionStyles[site.faction] || factionStyles.nationalist;
@@ -339,7 +339,7 @@ function renderArmySummary(month) {
   const summary = $('armySummary');
   if (!summary) return;
   const labels = ['japanese-army', 'puppet-manchukuo', 'puppet-nanjing', 'nationalist', 'communist'];
-  summary.innerHTML = `本阶段总量：${labels.map((faction) => {
+  summary.innerHTML = `本阶段各方估算兵力：${labels.map((faction) => {
     const style = factionStyles[faction];
     const range = factionForceStrength[faction]?.[month.stageId] || [0, 0];
     return `<span style="--army-summary-color:${style.color}"><i></i>${style.label} <b>${formatForceRange(range)}</b></span>`;
@@ -359,7 +359,7 @@ function armyDeploymentIcon(node, range) {
 function armyDeploymentPopup(node, month, range) {
   const style = factionStyles[node.faction] || factionStyles.nationalist;
   const equipment = node.equipment.map((item) => `<span class="unit-equipment-chip"><i>${equipmentGlyphs[item] || '·'}</i>${item}</span>`).join('');
-  return `<strong>${node.label} · ${node.historicalName}</strong><br><span style="color:${style.color}">${style.label}</span><div class="force-popup"><div><b>阶段兵力</b><span class="force-strength">${formatForceRange(range)}</span></div><div><b>编制</b>${node.unitType}</div><div><b>装备</b><span class="force-popup-equipment">${equipment}</span></div><div><b>外貌</b>${node.appearance}</div><div><b>分布权重</b>约 ${(node.share * 100).toFixed(0)}%（在该势力当前部署点中）</div></div><hr><small>${monthLabel(month.month)} · ${currentStage(month)?.label || '阶段'}</small><br><small>${forceDisplayMeta.note}</small><br><small>口径：${forceDisplayMeta.source}</small><br><small>节点表示战区、交通线或指挥集中地的数量级，不表示该城市或省份全部驻军。</small>`;
+  return `<strong>${node.label} · ${node.historicalName}</strong><br><span style="color:${style.color}">${style.label}</span><div class="force-popup"><div><b>估算兵力</b><span class="force-strength">${formatForceRange(range)}</span></div><div><b>部队类型</b>${node.unitType}</div><div><b>常见装备</b><span class="force-popup-equipment">${equipment}</span></div><div><b>军队形象</b>${node.appearance}</div><div><b>分布</b>约 ${(node.share * 100).toFixed(0)}%（在该方当前部署点中）</div></div><hr><small>${monthLabel(month.month)} · ${currentStage(month)?.label || '阶段'}</small><br><small>${forceDisplayMeta.note}</small><br><small>说明：${forceDisplayMeta.source}</small><br><small>这里显示的是战区和驻军集中地的估计，不表示整座城市或整个省份都驻有这些兵力。</small>`;
 }
 function renderArmyLayer(month) {
   if (!map || !armyLayer) return;
@@ -378,7 +378,7 @@ function renderArmyLayer(month) {
       fillOpacity: .08,
       className: `army-strength-ring ${node.faction}`
     });
-    ring.bindTooltip(`${node.label} · ${formatForceRange(range)}<br><small>圆环大小＝节点兵力分档</small>`, { sticky: true, className: `army-force-tip ${node.faction}` });
+    ring.bindTooltip(`${node.label} · ${formatForceRange(range)}<br><small>圆环越大，兵力估算越高</small>`, { sticky: true, className: `army-force-tip ${node.faction}` });
     ring.addTo(armyLayer);
     const marker = L.marker(node.coords, { icon: armyDeploymentIcon(node, range), zIndexOffset: 820 });
     marker.bindTooltip(`${node.label} · ${formatForceRange(range)}`, { sticky: true, direction: 'top', offset: [0, -52], className: `army-force-label ${node.faction}` });
@@ -394,8 +394,8 @@ function initMap() {
   factionLayer = L.layerGroup().addTo(map);
   armyLayer = L.layerGroup().addTo(map);
   historicalAdminLayer = L.layerGroup().addTo(map);
-  layersControl = L.control.layers({}, { '本月战役标记': eventLayer, '势力节点与推进轴': factionLayer, '兵力编制与装备（估算）': armyLayer, '历史行政名称（点位）': historicalAdminLayer }, { collapsed: false, position: 'topright' }).addTo(map);
-  L.control.attribution({ prefix: '离线 GeoJSON · Leaflet' }).addTo(map);
+  layersControl = L.control.layers({}, { '本月战役': eventLayer, '各方指挥点与推进方向': factionLayer, '兵力与装备（估算）': armyLayer, '当时城市与行政名称': historicalAdminLayer }, { collapsed: false, position: 'topright' }).addTo(map);
+  L.control.attribution({ prefix: '历史矢量地图' }).addTo(map);
   L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(map);
   Promise.all([
     fetch('./src/data/china-provinces.geojson').then((response) => { if (!response.ok) throw new Error(`省级 GeoJSON ${response.status}`); return response.json(); }),
@@ -405,11 +405,11 @@ function initMap() {
   ]).then(([provinceGeoJson, contextGeoJson, sitesGeoJson, historicalProvinceGeoJsonData]) => {
     chinaGeoJson = provinceGeoJson; warSitesGeoJson = sitesGeoJson; historicalProvinceGeoJson = historicalProvinceGeoJsonData;
     contextLayer = L.geoJSON(contextGeoJson, { style: { color: '#385d6a', weight: 1.5, fill: false, opacity: .65 }, onEachFeature: (feature, layer) => layer.bindTooltip(feature.properties.name || '东亚国界') }).addTo(map);
-    layersControl.addOverlay(contextLayer, '东亚国界背景');
+    layersControl.addOverlay(contextLayer, '东亚范围');
     renderProvinces();
-    layersControl.addOverlay(provinceLayer, '现代省界（仅定位）');
+    layersControl.addOverlay(provinceLayer, '现代省界（定位参考）');
     renderHistoricalProvinces();
-    layersControl.addOverlay(historicalProvinceLayer, '1932—1944历史省界（示意）');
+    layersControl.addOverlay(historicalProvinceLayer, '当时省界（示意）');
     renderFactionLayer(months[index]); renderArmyLayer(months[index]); renderHistoricalAdmin(months[index]); map.fitBounds(provinceLayer.getBounds(), { padding: [8, 8] }); loading.classList.add('loaded'); renderEventMarkers(months[index]);
   }).catch((error) => { loading.textContent = `省级 GeoJSON 加载失败：${error.message}`; loading.classList.add('error'); });
 }
@@ -431,14 +431,24 @@ function setIndex(next) {
   index = Math.max(0, Math.min(months.length - 1, next));
   const month = months[index]; const stage = currentStage(month);
   $('monthSlider').value = String(index); $('monthSelect').value = String(index);
-  $('currentMonthLabel').textContent = monthLabel(month.month); $('mapMonthTitle').textContent = monthLabel(month.month); $('stageLabel').textContent = month.stageLabel;
+  $('currentMonthLabel').textContent = monthLabel(month.month); $('mapMonthTitle').textContent = monthLabel(month.month); $('fullscreenMonthLabel')?.replaceChildren(document.createTextNode(monthLabel(month.month))); $('stageLabel').textContent = month.stageLabel;
   $('phaseTitle').textContent = stage.label; $('phaseSummary').textContent = stage.summary; $('phaseRange').textContent = `${stage.start.replace('-', '.')} — ${stage.end.replace('-', '.')}`;
   renderControlRows(month); renderEvents(month); renderArmySummary(month); updateMap(month);
   renderMonthLog();
 }
-function stopPlaying() { playing = false; if (timer) window.clearInterval(timer); timer = null; $('playButton').setAttribute('aria-pressed', 'false'); $('playText').textContent = '播放时间轴'; $('playButton').querySelector('.play-icon').textContent = '▶'; }
-function togglePlaying() { if (playing) { stopPlaying(); return; } playing = true; $('playButton').setAttribute('aria-pressed', 'true'); $('playText').textContent = '暂停播放'; $('playButton').querySelector('.play-icon').textContent = 'Ⅱ'; timer = window.setInterval(() => { if (index >= months.length - 1) return stopPlaying(); setIndex(index + 1); }, 1050); }
+const fullscreenPrev = $('fullscreenPrev');
+const fullscreenPlay = $('fullscreenPlay');
+const fullscreenNext = $('fullscreenNext');
+function syncFullscreenPlayButton() {
+  if (!fullscreenPlay) return;
+  fullscreenPlay.setAttribute('aria-pressed', String(playing));
+  $('fullscreenPlayText').textContent = playing ? '暂停' : '播放';
+  $('fullscreenPlayIcon').textContent = playing ? 'Ⅱ' : '▶';
+}
+function stopPlaying() { playing = false; if (timer) window.clearInterval(timer); timer = null; $('playButton').setAttribute('aria-pressed', 'false'); $('playText').textContent = '播放时间轴'; $('playButton').querySelector('.play-icon').textContent = '▶'; syncFullscreenPlayButton(); }
+function togglePlaying() { if (playing) { stopPlaying(); return; } playing = true; $('playButton').setAttribute('aria-pressed', 'true'); $('playText').textContent = '暂停播放'; $('playButton').querySelector('.play-icon').textContent = 'Ⅱ'; syncFullscreenPlayButton(); timer = window.setInterval(() => { if (index >= months.length - 1) return stopPlaying(); setIndex(index + 1); }, 1050); }
 $('prevMonth').addEventListener('click', () => { stopPlaying(); setIndex(index - 1); }); $('nextMonth').addEventListener('click', () => { stopPlaying(); setIndex(index + 1); }); $('playButton').addEventListener('click', togglePlaying);
+fullscreenPrev?.addEventListener('click', () => { stopPlaying(); setIndex(index - 1); }); fullscreenNext?.addEventListener('click', () => { stopPlaying(); setIndex(index + 1); }); fullscreenPlay?.addEventListener('click', togglePlaying);
 $('monthSlider').addEventListener('input', (event) => { stopPlaying(); setIndex(Number(event.target.value)); }); $('monthSelect').addEventListener('change', (event) => { stopPlaying(); setIndex(Number(event.target.value)); });
 $('zoomIn').addEventListener('click', () => map?.zoomIn()); $('zoomOut').addEventListener('click', () => map?.zoomOut()); $('zoomReset').addEventListener('click', () => { if (map && provinceLayer) map.fitBounds(provinceLayer.getBounds(), { padding: [8, 8] }); });
 const adminLevelSelect = $('adminLevelSelect');

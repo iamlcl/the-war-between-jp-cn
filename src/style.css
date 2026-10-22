@@ -119,6 +119,9 @@ body.map-fullscreen .historical-province-label,
 body.map-fullscreen .historical-admin-label{background:rgba(5,18,26,.9);border-color:rgba(245,205,122,.72);color:#ffe9b0;text-shadow:none;box-shadow:0 3px 10px rgba(0,0,0,.35)}
 body.map-fullscreen .map-card-fullscreen .leaflet-control-layers{margin-top:228px}
 @media (max-width:700px){body.map-fullscreen .map-card-fullscreen .leaflet-control-layers{margin-top:255px}}
+.fullscreen-timeline{display:none}
+body.map-fullscreen .map-card-fullscreen .fullscreen-timeline{position:absolute;top:224px;left:18px;z-index:1200;display:flex;align-items:center;gap:6px;padding:7px 9px;border:1px solid rgba(210,232,226,.28);border-radius:7px;background:rgba(5,18,26,.92);box-shadow:0 4px 16px rgba(0,0,0,.3);color:#eaf3ef;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);pointer-events:auto}
+.fullscreen-timeline-label{color:#b9c9c7;font-size:10px}.fullscreen-timeline strong{color:#ffe1a0;font-size:12px;margin-right:4px}.fullscreen-timeline button{height:27px;border:1px solid rgba(210,232,226,.3);border-radius:4px;background:#102b35;color:#edf5f1;padding:0 9px;cursor:pointer;font-size:12px}.fullscreen-timeline button:hover{border-color:#36c8bd;color:#36c8bd}.fullscreen-timeline button[aria-pressed="true"]{background:#1a514e;color:#eafff8;border-color:#36c8bd}
 
 /* On a narrow fullscreen viewport the toolbar must not squeeze the title into a
    tiny column. Keep the controls on their own row and stack the information
@@ -139,3 +142,4 @@ body.map-fullscreen .map-card-fullscreen .leaflet-control-layers{margin-top:228p
   body.map-fullscreen .map-card-fullscreen .army-legend .army-legend-note{display:none}
   body.map-fullscreen .map-card-fullscreen .leaflet-control-layers{margin-top:385px}
 }
+@media (max-width:700px){body.map-fullscreen .map-card-fullscreen .fullscreen-timeline{top:385px;left:10px;padding:6px 7px;gap:4px}.fullscreen-timeline-label{display:none}.fullscreen-timeline strong{font-size:11px;margin-right:2px}.fullscreen-timeline button{height:26px;padding:0 7px;font-size:11px}}
