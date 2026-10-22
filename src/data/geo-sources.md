@@ -9,3 +9,5 @@
 `east-asia-countries.geojson` 是从 [datasets/geo-countries](https://github.com/datasets/geo-countries) 的 `countries.geojson` 中筛出的中国、日本、朝鲜、韩国、蒙古、俄罗斯、缅甸、越南、老挝、泰国和台湾等 11 个要素。该数据集以 Natural Earth 国界资料为基础；使用时应同时遵守仓库中的许可证和 Natural Earth 的公共领域条款。它用于东亚区域上下文，不用于判定战时主权或占领线。
 
 `war-sites.geojson` 为报告中 38 个关键事件的 GeoJSON 点图层。事件名称、日期和地点来自 `warData.js`；坐标为对应城市或战区的近似 WGS84 坐标，用于地图定位，不表示战役边界。事件史料应以 `report.md` 所列战史与档案来源为准。
+
+`historicalAdmin.js` 是战时行政名称与军政节点索引，不是县界多边形。条目的 `historicalName`、`admin1937` 和 `level` 保留 1937—1945 年语境，`modernName` 只用于现代地图定位；`confidence` 和 `source` 用于区分可直接核验的城市/县城节点与根据地政治节点。历史行政区复原建议以 Harvard China Historical GIS（CHGIS）1935 historical administrative units 为边界底稿，再逐幅对照民国行政区划沿革和战史地图；本项目未把现代省界当作历史县界。

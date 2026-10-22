@@ -1,7 +1,22 @@
 import { months, stageDefinitions, eventIndex } from './data/warData.js';
+import { factionSites, factionTracks } from './data/factionSites.js';
+import { historicalAdminNodes } from './data/historicalAdmin.js';
 
 const $ = (id) => document.getElementById(id);
 const colors = { japan: '#d86148', partial: '#e49a63', national: '#2b9e96', base: '#d0a341', contested: '#7069a3', preexisting: '#8a6b4a' };
+const factionStyles = {
+  'japanese-army': { label: '日军', color: '#c84f43', icon: '⚔' },
+  'puppet-manchukuo': { label: '伪满', color: '#a77b35', icon: '◆' },
+  'puppet-nanjing': { label: '汪伪政府', color: '#9b6b6b', icon: '▣' },
+  nationalist: { label: '国民党政府／国军', color: '#2b9e96', icon: '★' },
+  communist: { label: '共产党／八路军／新四军', color: '#bd4d4d', icon: '✚' }
+};
+const adminLevelLabels = {
+  'special-city': '特别市／陪都',
+  city: '市／省治',
+  'county-seat': '县级驻地',
+  town: '镇级战场点'
+};
 const stateLabels = { japan: '日军／伪政权主要控制', partial: '日军控制城市／铁路，省内混合', national: '国民政府及中国军队', base: '敌后根据地／游击区', contested: '正面争夺区', preexisting: '战前日本殖民统治' };
 const provinceNames = (value) => value.replace(/(维吾尔|壮族|回族|特别行政区|自治区|省|市)$/g, '').replace('特别行政区', '');
 const eventPlaces = {
@@ -35,11 +50,15 @@ let map = null;
 let provinceLayer = null;
 let eventLayer = null;
 let contextLayer = null;
+let factionLayer = null;
+let historicalAdminLayer = null;
 let layersControl = null;
 let chinaGeoJson = null;
 let warSitesGeoJson = null;
+let adminLevelFilter = 'all';
 
 function monthLabel(value) { const [year, month] = value.split('-'); return `${year}年${Number(month)}月`; }
+function monthIsBetween(value, from, to) { return value >= from && value <= to; }
 function currentStage(month) { return stageDefinitions.find((stage) => stage.id === month.stageId); }
 function getState(name, stageId) {
   const key = provinceNames(name);
@@ -75,8 +94,12 @@ function onEachProvince(feature, layer) {
 }
 function renderProvinces() {
   if (!map || !chinaGeoJson) return;
-  if (provinceLayer) provinceLayer.remove();
-  provinceLayer = L.geoJSON(chinaGeoJson, { style: styleFeature, onEachFeature: onEachProvince }).addTo(map);
+  if (!provinceLayer) {
+    provinceLayer = L.geoJSON(null, { style: styleFeature, onEachFeature: onEachProvince }).addTo(map);
+  } else {
+    provinceLayer.clearLayers();
+  }
+  provinceLayer.addData(chinaGeoJson);
 }
 function renderEventMarkers(month) {
   if (!map || !eventLayer) return;
@@ -84,7 +107,7 @@ function renderEventMarkers(month) {
   if (warSitesGeoJson) {
     L.geoJSON(warSitesGeoJson, {
       filter: (feature) => feature.properties.month === month.month,
-      pointToLayer: (feature, latlng) => L.circleMarker(latlng, { radius: 7, color: '#fff7d8', weight: 2, fillColor: '#efc875', fillOpacity: .95 }),
+      pointToLayer: (feature, latlng) => L.circleMarker(latlng, { radius: 7, color: '#fff7d8', weight: 2, fillColor: '#efc875', fillOpacity: .95, className: 'battle-site-marker' }),
       onEachFeature: (feature, layer) => layer.bindPopup(`<strong>${feature.properties.name}</strong><br><small>${feature.properties.date} · ${feature.properties.place}</small><br><small>事件定位点，非战役边界；证据等级 ${feature.properties.confidence || 'A'}</small>`)
     }).addTo(eventLayer);
     return;
@@ -97,12 +120,57 @@ function renderEventMarkers(month) {
     marker.addTo(eventLayer);
   });
 }
+function renderHistoricalAdmin(month) {
+  if (!map || !historicalAdminLayer) return;
+  historicalAdminLayer.clearLayers();
+  historicalAdminNodesForMonth(month).forEach((node) => {
+    const level = adminLevelLabels[node.level] || node.level;
+    const marker = L.circleMarker(node.coords, {
+      radius: node.level === 'special-city' ? 6 : node.level === 'city' ? 5 : node.level === 'county-seat' ? 4 : 3,
+      color: '#314e58', weight: 1.5, fillColor: '#f5e5b7', fillOpacity: .92, className: `historical-admin-marker ${node.level}`
+    });
+    marker.bindTooltip(`${node.historicalName} · ${level}`, { permanent: node.level === 'special-city', sticky: true, direction: 'right', offset: [5, 0], className: 'historical-admin-label' });
+    marker.bindPopup(`<strong>${node.historicalName}</strong><br><small>层级：${level}</small><br><small>当时所属：${node.admin1937}</small><br><small>现代定位：${node.modernName}</small><hr><small>${node.note}</small><br><small>来源：${node.source}；置信度 ${node.confidence}</small>`);
+    marker.addTo(historicalAdminLayer);
+  });
+}
+function historicalAdminNodesForMonth(month) {
+  return historicalAdminNodes.filter((node) => monthIsBetween(month.month, node.from, node.to) && (adminLevelFilter === 'all' || node.level === adminLevelFilter));
+}
+function factionMarkerIcon(site) {
+  const style = factionStyles[site.faction] || factionStyles.nationalist;
+  return L.divIcon({
+    className: `faction-marker ${site.faction}`,
+    html: `<span class="faction-marker-core" style="--faction-color:${style.color}">${style.icon}</span><span class="faction-marker-label">${site.label}</span>`,
+    iconSize: [30, 38], iconAnchor: [15, 19], tooltipAnchor: [0, -20]
+  });
+}
+function renderFactionLayer(month) {
+  if (!map || !factionLayer) return;
+  factionLayer.clearLayers();
+  factionTracks.filter((track) => monthIsBetween(month.month, track.from, track.to)).forEach((track) => {
+    const style = factionStyles[track.faction] || factionStyles.nationalist;
+    L.polyline(track.coords, {
+      className: `faction-track ${track.faction}`,
+      color: style.color, weight: 3, opacity: .82, dashArray: '8 10', lineCap: 'round'
+    }).bindTooltip(`${track.label}<br><small>仅表示指挥／推进轴线，不是行政边界</small>`, { sticky: true, className: 'faction-track-tip' }).addTo(factionLayer);
+  });
+  factionSites.filter((site) => monthIsBetween(month.month, site.from, site.to)).forEach((site) => {
+    const style = factionStyles[site.faction] || factionStyles.nationalist;
+    const marker = L.marker(site.coords, { icon: factionMarkerIcon(site), zIndexOffset: 700 });
+    marker.bindPopup(`<strong>${site.label} · ${site.historicalName}</strong><br><span style="color:${style.color}">${style.label}</span><hr><small>${site.role}</small><br><small>历史节点：${site.from}—${site.to}；${site.source}</small><br><small>这是指挥／政治节点标记，不代表该点覆盖整个区域。</small>`);
+    marker.bindTooltip(`${site.label} · ${site.historicalName}`, { permanent: true, direction: 'top', offset: [0, -18], className: `faction-label ${site.faction}` });
+    marker.addTo(factionLayer);
+  });
+}
 function initMap() {
   const loading = $('mapLoading');
   if (!window.L) { loading.textContent = '本地 Leaflet 矢量组件未加载。'; loading.classList.add('error'); return; }
   map = L.map('leafletMap', { center: [34, 113], zoom: 4, minZoom: 3, maxZoom: 9, zoomControl: true });
   eventLayer = L.layerGroup().addTo(map);
-  layersControl = L.control.layers({}, { '本月战役标记': eventLayer }, { collapsed: false, position: 'topright' }).addTo(map);
+  factionLayer = L.layerGroup().addTo(map);
+  historicalAdminLayer = L.layerGroup().addTo(map);
+  layersControl = L.control.layers({}, { '本月战役标记': eventLayer, '势力节点与推进轴': factionLayer, '历史行政名称（点位）': historicalAdminLayer }, { collapsed: false, position: 'topright' }).addTo(map);
   L.control.attribution({ prefix: '离线 GeoJSON · Leaflet' }).addTo(map);
   L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(map);
   Promise.all([
@@ -113,10 +181,10 @@ function initMap() {
     chinaGeoJson = provinceGeoJson; warSitesGeoJson = sitesGeoJson;
     contextLayer = L.geoJSON(contextGeoJson, { style: { color: '#385d6a', weight: 1.5, fill: false, opacity: .65 }, onEachFeature: (feature, layer) => layer.bindTooltip(feature.properties.name || '东亚国界') }).addTo(map);
     layersControl.addOverlay(contextLayer, '东亚国界背景');
-    renderProvinces(); map.fitBounds(provinceLayer.getBounds(), { padding: [8, 8] }); loading.classList.add('loaded'); renderEventMarkers(months[index]);
+    renderProvinces(); layersControl.addOverlay(provinceLayer, '现代省界（仅定位）'); renderFactionLayer(months[index]); renderHistoricalAdmin(months[index]); map.fitBounds(provinceLayer.getBounds(), { padding: [8, 8] }); loading.classList.add('loaded'); renderEventMarkers(months[index]);
   }).catch((error) => { loading.textContent = `省级 GeoJSON 加载失败：${error.message}`; loading.classList.add('error'); });
 }
-function updateMap(month) { if (map) { renderProvinces(); renderEventMarkers(month); } }
+function updateMap(month) { if (map) { renderProvinces(); renderFactionLayer(month); renderHistoricalAdmin(month); renderEventMarkers(month); } }
 function renderControlRows(month) {
   const rows = [['japan', '日军／伪政权', month.japan], ['national', '国民政府及中国军队', month.national], ['base', '敌后根据地／游击区', month.base], ['contested', '正面与交通线争夺', month.contested]];
   $('controlRows').innerHTML = rows.map(([type, label, text]) => `<div class="control-row"><div class="control-row-head"><i class="${type}"></i><strong>${label}</strong></div><p>${text.join('；')}</p></div>`).join('');
@@ -144,4 +212,23 @@ function togglePlaying() { if (playing) { stopPlaying(); return; } playing = tru
 $('prevMonth').addEventListener('click', () => { stopPlaying(); setIndex(index - 1); }); $('nextMonth').addEventListener('click', () => { stopPlaying(); setIndex(index + 1); }); $('playButton').addEventListener('click', togglePlaying);
 $('monthSlider').addEventListener('input', (event) => { stopPlaying(); setIndex(Number(event.target.value)); }); $('monthSelect').addEventListener('change', (event) => { stopPlaying(); setIndex(Number(event.target.value)); });
 $('zoomIn').addEventListener('click', () => map?.zoomIn()); $('zoomOut').addEventListener('click', () => map?.zoomOut()); $('zoomReset').addEventListener('click', () => { if (map && provinceLayer) map.fitBounds(provinceLayer.getBounds(), { padding: [8, 8] }); });
+const adminLevelSelect = $('adminLevelSelect');
+adminLevelSelect?.addEventListener('change', (event) => { adminLevelFilter = event.target.value; renderHistoricalAdmin(months[index]); });
+const fullscreenMapButton = $('fullscreenMap');
+const mapCard = document.querySelector('.map-card');
+function setMapFullscreen(enabled) {
+  if (!fullscreenMapButton || !mapCard) return;
+  document.body.classList.toggle('map-fullscreen', enabled);
+  mapCard.classList.toggle('map-card-fullscreen', enabled);
+  fullscreenMapButton.setAttribute('aria-pressed', String(enabled));
+  fullscreenMapButton.setAttribute('aria-label', enabled ? '退出全屏地图' : '全屏地图');
+  fullscreenMapButton.textContent = enabled ? '×' : '⛶';
+  window.setTimeout(() => {
+    if (!map) return;
+    map.invalidateSize({ animate: false });
+    if (provinceLayer) map.fitBounds(provinceLayer.getBounds(), { padding: enabled ? [96, 120] : [8, 8], animate: false });
+  }, 80);
+}
+fullscreenMapButton?.addEventListener('click', () => setMapFullscreen(!document.body.classList.contains('map-fullscreen')));
+document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && document.body.classList.contains('map-fullscreen')) setMapFullscreen(false); });
 renderSelect(); setIndex(0); initMap();

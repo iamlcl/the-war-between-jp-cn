@@ -69,26 +69,43 @@
             <div class="card-header">
               <div>
                 <p class="eyebrow">CONTROL SNAPSHOT</p>
-                <h3>真实地理底图 · <span id="mapMonthTitle">1937年7月</span></h3>
+                <h3>历史地理矢量底图 · <span id="mapMonthTitle">1937年7月</span></h3>
               </div>
               <div class="map-tools" aria-label="地图工具">
                 <button type="button" class="tool-btn" id="zoomOut" aria-label="缩小地图">−</button>
                 <button type="button" class="tool-btn" id="zoomReset" aria-label="重置地图缩放">1×</button>
                 <button type="button" class="tool-btn" id="zoomIn" aria-label="放大地图">＋</button>
+                <button type="button" class="tool-btn fullscreen-map-btn" id="fullscreenMap" aria-label="全屏地图" aria-pressed="false">⛶</button>
+                <label class="admin-level-control" for="adminLevelSelect">行政层级
+                  <select id="adminLevelSelect" aria-label="历史行政层级">
+                    <option value="all">全部</option>
+                    <option value="special-city">特别市／陪都</option>
+                    <option value="city">市／省治</option>
+                    <option value="county-seat">县级驻地</option>
+                    <option value="town">镇级战场点</option>
+                  </select>
+                </label>
               </div>
             </div>
             <div class="legend" aria-label="地图图例">
-              <span><i class="legend-swatch japan"></i>日军／伪政权主要控制</span>
-              <span><i class="legend-swatch partial"></i>日军城市／铁路控制</span>
-              <span><i class="legend-swatch national"></i>国民政府及中国军队</span>
-              <span><i class="legend-swatch base"></i>敌后根据地／游击区</span>
-              <span><i class="legend-swatch contested"></i>正面争夺区</span>
+              <span><i class="legend-swatch japan"></i>日军／伪政权 · 省级定位色层</span>
+              <span><i class="legend-swatch partial"></i>日军城市／铁路 · 省内混合</span>
+              <span><i class="legend-swatch national"></i>国民政府／国军 · 后方参照</span>
+              <span><i class="legend-swatch base"></i>敌后根据地／游击区 · 省内混合</span>
+              <span><i class="legend-swatch contested"></i>正面争夺区 · 省内混合</span>
+            </div>
+            <div class="faction-legend" aria-label="历史势力标识">
+              <span><i class="faction-key japanese-army">⚔</i>日军</span>
+              <span><i class="faction-key puppet-manchukuo">◆</i>伪满洲国</span>
+              <span><i class="faction-key puppet-nanjing">▣</i>汪伪政府</span>
+              <span><i class="faction-key nationalist">★</i>国民党政府／国军</span>
+              <span><i class="faction-key communist">✚</i>共产党／八路军／新四军</span>
             </div>
             <div class="map-frame">
-              <div id="leafletMap" role="application" aria-label="抗日战争月度控制区真实地理地图"></div>
+              <div id="leafletMap" role="application" aria-label="抗日战争月度历史地理矢量地图"></div>
               <div id="mapLoading" class="map-loading">正在加载本地历史矢量边界…</div>
             </div>
-            <p class="map-disclaimer"><span>ⓘ</span> 本地图不调用在线瓦片；地图由本地 Leaflet 组件渲染 GeoJSON 矢量边界。现代省界只作地理定位，颜色是按月的历史控制判断；省内很多地区是“城市／铁路控制”或争夺区，不等同于整省行政占领。</p>
+            <p class="map-disclaimer"><span>ⓘ</span> 本地图不调用在线瓦片。浅色边界是现代省级 GeoJSON，仅作地理定位；历史行政层使用特别市、市／省治、县级驻地和镇级战场点的历史名称索引，点位不是县界复原。控制颜色按月表达城市、铁路、据点和根据地的史料判断，不等同于整省行政占领。</p>
           </article>
 
           <aside class="insight-rail">
