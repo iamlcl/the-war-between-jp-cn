@@ -1,6 +1,7 @@
 import { months, stageDefinitions, eventIndex } from './data/warData.js';
 import { factionSites, factionTracks } from './data/factionSites.js';
 import { historicalAdminNodes } from './data/historicalAdmin.js';
+import { historicalProvinceDefinitions, historicalProvinceApproximatePolygons } from './data/historicalProvinces.js';
 
 const $ = (id) => document.getElementById(id);
 const colors = { japan: '#d86148', partial: '#e49a63', national: '#2b9e96', base: '#d0a341', contested: '#7069a3', preexisting: '#8a6b4a' };
@@ -52,8 +53,10 @@ let eventLayer = null;
 let contextLayer = null;
 let factionLayer = null;
 let historicalAdminLayer = null;
+let historicalProvinceLayer = null;
 let layersControl = null;
 let chinaGeoJson = null;
+let historicalProvinceGeoJson = null;
 let warSitesGeoJson = null;
 let adminLevelFilter = 'all';
 
@@ -100,6 +103,127 @@ function renderProvinces() {
     provinceLayer.clearLayers();
   }
   provinceLayer.addData(chinaGeoJson);
+}
+function historicalProvinceStatusLabel(status) {
+  if (status === 'schematic') return '1932—1944历史示意边界';
+  return status === 'modern-remap' ? '现代几何代理' : '近似复原';
+}
+function historicalProvincePopup(properties) {
+  const status = historicalProvinceStatusLabel(properties.geometryStatus);
+  const modernName = properties.modernName ? `现代定位：${properties.modernName}<br>` : '';
+  const source = properties.source ? `<br><small>几何来源：${properties.source}</small>` : '';
+  const sourcePeriod = properties.sourcePeriod ? `<br><small>几何年代：${properties.sourcePeriod}</small>` : '';
+  const sourceRepo = properties.sourceRepo ? `<br><small>来源仓库：${properties.sourceRepo}</small>` : '';
+  const basis = properties.geometryStatus === 'schematic'
+    ? '边界来源口径：1932—1944历史省级示意轮廓；并非逐年测绘，1937精确时序仍需按CHGIS/同期行政图核验。'
+    : '边界来源口径：历史行政沿革注册表；当前几何为现代定位代理或近似复原，待接入并核验CHGIS时序边界。';
+  return `<strong>${properties.historicalName}</strong><br><small>历史政权：${properties.authority}</small><br><small>存在区间：${properties.from || '1937-07'}—${properties.to || '1945-09'}</small><br><small>几何状态：${status}</small><br><small>${modernName}${properties.note || ''}</small>${sourcePeriod}${source}${sourceRepo}<hr><small>${basis}</small><br><small>省界层只表达历史分区位置；控制颜色、战役点和势力节点分别来自独立史料层。</small>`;
+}
+function historicalProvinceStyle(feature) {
+  const approximate = feature.properties.geometryStatus !== 'modern-remap';
+  const schematic = feature.properties.geometryStatus === 'schematic';
+  return {
+    color: schematic ? '#bb7b2f' : approximate ? '#9b632c' : '#806b3b',
+    weight: schematic ? 2 : approximate ? 2.2 : 1.65,
+    dashArray: schematic ? '5 4' : approximate ? '7 5' : '4 4',
+    fillColor: schematic ? '#f1c36f' : '#efc875',
+    fillOpacity: schematic ? .085 : approximate ? .10 : .045,
+    className: schematic ? 'historical-province-border schematic' : approximate ? 'historical-province-border approximate' : 'historical-province-border'
+  };
+}
+function onEachHistoricalProvince(feature, layer) {
+  const status = historicalProvinceStatusLabel(feature.properties.geometryStatus);
+  layer.bindTooltip(`${feature.properties.historicalName} · ${status}`, { sticky: true, className: 'historical-province-label' });
+  layer.bindPopup(historicalProvincePopup(feature.properties), { maxWidth: 360 });
+  layer.on({ mouseover: (event) => event.target.setStyle({ weight: 3, color: '#f5d38a', fillOpacity: .12 }), mouseout: (event) => event.target.setStyle(historicalProvinceStyle(feature)) });
+}
+function historicalProvinceFeatures() {
+  if (historicalProvinceGeoJson?.features?.length) {
+    const aliases = { 辽宁: 'liaoning', 河北: 'hebei', 台湾: 'taiwan' };
+    const byId = new Map(historicalProvinceDefinitions.map((definition) => [definition.id, definition]));
+    const byCompactName = new Map(historicalProvinceDefinitions.map((definition) => [definition.historicalName.replace(/省|地方|总督府辖区|（.*?）/g, ''), definition]));
+    const normalized = historicalProvinceGeoJson.features.map((feature) => {
+      const sourceName = feature.properties.historicalName;
+      const definition = byId.get(aliases[sourceName]) || byCompactName.get(sourceName);
+      return {
+        ...feature,
+        properties: {
+          ...feature.properties,
+          historicalName: definition?.historicalName || `${sourceName}省`,
+          authority: definition?.authority || '中华民国',
+          from: definition?.from || '1937-07',
+          to: definition?.to || '1945-09',
+          geometryStatus: 'schematic',
+          note: feature.properties.note || definition?.note || '1932—1944历史省级边界示意。',
+          source: 'DeanChensj/jiangshan-map · atlas_snapshots.js · s_roc',
+          sourcePeriod: '1932—1944'
+        }
+      };
+    });
+    // The historical snapshot does not draw Taiwan in this ROC comparison.
+    // Add its period-correct Japanese colonial outline as a clearly marked
+    // modern-geometry proxy so the map does not silently omit the island.
+    if (chinaGeoJson) {
+      const presentNames = new Set(historicalProvinceGeoJson.features.map((feature) => feature.properties.historicalName));
+      const taiwan = historicalProvinceDefinitions.find((definition) => definition.id === 'taiwan');
+      if (taiwan && !presentNames.has('台湾')) chinaGeoJson.features.filter((feature) => taiwan.modernRefs.includes(feature.properties.name)).forEach((feature) => normalized.push({
+        ...feature,
+        properties: { ...feature.properties, historicalName: taiwan.historicalName, authority: taiwan.authority, from: taiwan.from, to: taiwan.to, geometryStatus: taiwan.geometryStatus, note: taiwan.note, modernName: feature.properties.name }
+      }));
+    }
+    return normalized;
+  }
+  if (!chinaGeoJson) return [];
+  const customGeometryIds = new Set(historicalProvinceApproximatePolygons.map((polygon) => polygon.id.replace(/-approx$/, '')));
+  const definitionsByModernRef = new Map();
+  historicalProvinceDefinitions.forEach((definition) => {
+    // The four provinces with custom outlines must not also inherit an entire
+    // modern province such as 内蒙古 or 河北; that would visually duplicate
+    // unrelated territory and make the approximation look authoritative.
+    if (customGeometryIds.has(definition.id)) return;
+    definition.modernRefs.forEach((modernRef) => definitionsByModernRef.set(modernRef, definition));
+  });
+  return chinaGeoJson.features.flatMap((feature) => {
+    const definition = definitionsByModernRef.get(feature.properties.name);
+    if (!definition) return [];
+    return [{
+      ...feature,
+      properties: {
+        ...feature.properties,
+        historicalName: definition.historicalName,
+        authority: definition.authority,
+        from: definition.from,
+        to: definition.to,
+        geometryStatus: definition.geometryStatus,
+        note: definition.note,
+        modernName: feature.properties.name
+      }
+    }];
+  });
+}
+function renderHistoricalProvinces() {
+  if (!map || (!chinaGeoJson && !historicalProvinceGeoJson)) return;
+  if (!historicalProvinceLayer) historicalProvinceLayer = L.layerGroup().addTo(map);
+  historicalProvinceLayer.clearLayers();
+  L.geoJSON({ type: 'FeatureCollection', features: historicalProvinceFeatures() }, {
+    style: historicalProvinceStyle,
+    onEachFeature: onEachHistoricalProvince
+  }).addTo(historicalProvinceLayer);
+  if (!historicalProvinceGeoJson?.features?.length) historicalProvinceApproximatePolygons.forEach((polygon) => {
+    const properties = {
+      historicalName: polygon.historicalName,
+      authority: polygon.authority,
+      from: '1937-07',
+      to: polygon.id === 'xikang-approx' ? '1945-09' : '1945-08',
+      geometryStatus: polygon.geometryStatus,
+      note: polygon.note,
+      modernName: '无一对一现代省界'
+    };
+    const layer = L.polygon(polygon.coords, historicalProvinceStyle({ properties }));
+    layer.bindTooltip(`${polygon.historicalName} · 近似复原`, { sticky: true, className: 'historical-province-label' });
+    layer.bindPopup(historicalProvincePopup(properties), { maxWidth: 360 });
+    layer.addTo(historicalProvinceLayer);
+  });
 }
 function renderEventMarkers(month) {
   if (!map || !eventLayer) return;
@@ -176,12 +300,17 @@ function initMap() {
   Promise.all([
     fetch('./src/data/china-provinces.geojson').then((response) => { if (!response.ok) throw new Error(`省级 GeoJSON ${response.status}`); return response.json(); }),
     fetch('./src/data/east-asia-countries.geojson').then((response) => { if (!response.ok) throw new Error(`东亚 GeoJSON ${response.status}`); return response.json(); }),
-    fetch('./src/data/war-sites.geojson').then((response) => { if (!response.ok) throw new Error(`战役 GeoJSON ${response.status}`); return response.json(); })
-  ]).then(([provinceGeoJson, contextGeoJson, sitesGeoJson]) => {
-    chinaGeoJson = provinceGeoJson; warSitesGeoJson = sitesGeoJson;
+    fetch('./src/data/war-sites.geojson').then((response) => { if (!response.ok) throw new Error(`战役 GeoJSON ${response.status}`); return response.json(); }),
+    fetch('./src/data/historical-provinces-1932-1944.geojson').then((response) => { if (!response.ok) throw new Error(`历史省界 GeoJSON ${response.status}`); return response.json(); })
+  ]).then(([provinceGeoJson, contextGeoJson, sitesGeoJson, historicalProvinceGeoJsonData]) => {
+    chinaGeoJson = provinceGeoJson; warSitesGeoJson = sitesGeoJson; historicalProvinceGeoJson = historicalProvinceGeoJsonData;
     contextLayer = L.geoJSON(contextGeoJson, { style: { color: '#385d6a', weight: 1.5, fill: false, opacity: .65 }, onEachFeature: (feature, layer) => layer.bindTooltip(feature.properties.name || '东亚国界') }).addTo(map);
     layersControl.addOverlay(contextLayer, '东亚国界背景');
-    renderProvinces(); layersControl.addOverlay(provinceLayer, '现代省界（仅定位）'); renderFactionLayer(months[index]); renderHistoricalAdmin(months[index]); map.fitBounds(provinceLayer.getBounds(), { padding: [8, 8] }); loading.classList.add('loaded'); renderEventMarkers(months[index]);
+    renderProvinces();
+    layersControl.addOverlay(provinceLayer, '现代省界（仅定位）');
+    renderHistoricalProvinces();
+    layersControl.addOverlay(historicalProvinceLayer, '1932—1944历史省界（示意）');
+    renderFactionLayer(months[index]); renderHistoricalAdmin(months[index]); map.fitBounds(provinceLayer.getBounds(), { padding: [8, 8] }); loading.classList.add('loaded'); renderEventMarkers(months[index]);
   }).catch((error) => { loading.textContent = `省级 GeoJSON 加载失败：${error.message}`; loading.classList.add('error'); });
 }
 function updateMap(month) { if (map) { renderProvinces(); renderFactionLayer(month); renderHistoricalAdmin(month); renderEventMarkers(month); } }

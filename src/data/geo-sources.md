@@ -11,3 +11,7 @@
 `war-sites.geojson` 为报告中 38 个关键事件的 GeoJSON 点图层。事件名称、日期和地点来自 `warData.js`；坐标为对应城市或战区的近似 WGS84 坐标，用于地图定位，不表示战役边界。事件史料应以 `report.md` 所列战史与档案来源为准。
 
 `historicalAdmin.js` 是战时行政名称与军政节点索引，不是县界多边形。条目的 `historicalName`、`admin1937` 和 `level` 保留 1937—1945 年语境，`modernName` 只用于现代地图定位；`confidence` 和 `source` 用于区分可直接核验的城市/县城节点与根据地政治节点。历史行政区复原建议以 Harvard China Historical GIS（CHGIS）1935 historical administrative units 为边界底稿，再逐幅对照民国行政区划沿革和战史地图；本项目未把现代省界当作历史县界。
+
+`historicalProvinces.js` 是独立的 1937—1945 省级分区注册表。它保留民国、满洲国和蒙疆语境下的省名、政权、存在区间和现代定位映射，并为缺少历史几何时提供后备近似轮廓。
+
+`historical-provinces-1932-1944.geojson` 是应用当前使用的历史省界层，来自 DeanChensj/jiangshan-map 的 `atlas_snapshots.js` `s_roc` 快照（[源仓库](https://github.com/DeanChensj/jiangshan-map)，GPL-3.0）。该快照覆盖 1932—1944 的 29 个省级轮廓，包括察哈尔、绥远、热河和西康；来源项目将其定义为示意性历史轮廓，不能当作逐年测绘。文件保留 `sourceRepo`、`sourceFile`、`sourceSnapshot` 和 `geometryStatus=schematic` 字段；台湾因该快照的 ROC 对照范围未绘制，由本项目标为日本殖民时期的现代几何定位代理。若需要 1937 年逐县可审计边界，仍须按授权接入 CHGIS 时序数据并对照同期行政图。

@@ -70,6 +70,7 @@
               <div>
                 <p class="eyebrow">CONTROL SNAPSHOT</p>
                 <h3>历史地理矢量底图 · <span id="mapMonthTitle">1937年7月</span></h3>
+                <span class="history-layer-badge">1932—1944 历史省级示意 · 1937 时序待核验</span>
               </div>
               <div class="map-tools" aria-label="地图工具">
                 <button type="button" class="tool-btn" id="zoomOut" aria-label="缩小地图">−</button>
@@ -93,6 +94,7 @@
               <span><i class="legend-swatch national"></i>国民政府／国军 · 后方参照</span>
               <span><i class="legend-swatch base"></i>敌后根据地／游击区 · 省内混合</span>
               <span><i class="legend-swatch contested"></i>正面争夺区 · 省内混合</span>
+              <span><i class="legend-swatch historical-province"></i>1932—1944 历史省界 · 示意</span>
             </div>
             <div class="faction-legend" aria-label="历史势力标识">
               <span><i class="faction-key japanese-army">⚔</i>日军</span>
@@ -105,7 +107,7 @@
               <div id="leafletMap" role="application" aria-label="抗日战争月度历史地理矢量地图"></div>
               <div id="mapLoading" class="map-loading">正在加载本地历史矢量边界…</div>
             </div>
-            <p class="map-disclaimer"><span>ⓘ</span> 本地图不调用在线瓦片。浅色边界是现代省级 GeoJSON，仅作地理定位；历史行政层使用特别市、市／省治、县级驻地和镇级战场点的历史名称索引，点位不是县界复原。控制颜色按月表达城市、铁路、据点和根据地的史料判断，不等同于整省行政占领。</p>
+            <p class="map-disclaimer"><span>ⓘ</span> 本地图不调用在线瓦片。历史省界层采用 1932—1944 民国省级示意轮廓，保留察哈尔、绥远、热河、西康等当时分区；它不是逐年测绘，1937 精确时序需按 CHGIS 与同期行政图核验。台湾补充为日本殖民时期定位代理，现代省界另列为“仅定位”参照；历史行政点位不是县界复原，月度颜色也不等同于整省行政占领。</p>
           </article>
 
           <aside class="insight-rail">

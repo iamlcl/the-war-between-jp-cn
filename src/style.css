@@ -8,6 +8,8 @@
 :where(button,select,input,.map-content-region,.event-pin):focus-visible{outline:2px solid var(--gold);outline-offset:3px}.month-cell:focus-visible,.tool-btn:focus-visible,.icon-btn:focus-visible,.play-btn:focus-visible,.jump-control select:focus-visible{border-color:var(--gold);box-shadow:0 0 0 2px rgba(239,200,117,.25)}
 .map-frame{min-height:520px}.map-frame #leafletMap{height:520px;width:100%;background:#dbe7e4}.leaflet-container{font-family:'IBM Plex Sans Condensed',Inter,system-ui,sans-serif;background:#dbe7e4}.leaflet-control-zoom a{color:#17323a!important}.leaflet-control-attribution{font-size:10px!important}.leaflet-control-attribution svg{display:inline;width:auto!important;height:auto!important;min-height:0!important}.leaflet-control-layers{font-size:12px}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#0b1d26;color:#f0e4d1}.leaflet-popup-content{font-size:13px;line-height:1.5}.leaflet-popup-content strong{font-family:'Noto Serif SC',serif}.leaflet-popup-content small{color:#9daeb0}.province-label{background:transparent;border:0;box-shadow:none;color:#28434b;font-size:11px;font-weight:600;text-shadow:0 1px 2px rgba(255,255,255,.8)}.event-marker{background:#efc875;border:2px solid #fff3d6;border-radius:50%;box-shadow:0 0 0 4px rgba(239,200,117,.32)}.map-loading{position:absolute;inset:0;z-index:900;display:flex;align-items:center;justify-content:center;background:rgba(11,29,40,.9);color:#efc875;font-size:13px;pointer-events:none;transition:opacity .2s}.map-loading.loaded{opacity:0}.map-loading.error{color:#f2a28f;pointer-events:auto;text-align:center;padding:24px}.leaflet-pane{z-index:400}.leaflet-top,.leaflet-bottom{z-index:800}@media (max-width:700px){.map-frame,.map-frame #leafletMap{min-height:360px;height:360px}}
 .legend-swatch.partial{background:#e49a63}
+.legend-swatch.historical-province{width:15px;height:10px;border:1.5px dashed #efc875;border-radius:2px;background:rgba(239,200,117,.12)}
+.history-layer-badge{display:inline-flex;align-items:center;margin-top:8px;padding:4px 7px;border:1px dashed rgba(239,200,117,.55);border-radius:4px;color:#efc875;background:rgba(239,200,117,.08);font:10px 'DM Mono',monospace;letter-spacing:.02em}
 .faction-marker{background:transparent;border:0;overflow:visible}
 .admin-level-control{display:flex;align-items:center;gap:4px;color:var(--dim);font:10px 'DM Mono',monospace;white-space:nowrap}
 .admin-level-control select{max-width:105px;border:1px solid var(--line);border-radius:4px;background:#0a1a23;color:var(--cream);padding:5px 4px;font:11px 'IBM Plex Sans Condensed',sans-serif}
@@ -27,6 +29,11 @@
 .leaflet-tooltip.faction-label::before{border-top-color:rgba(6,20,28,.94)}
 .faction-track{stroke-linecap:round;animation:faction-march 1.25s linear infinite}
 .faction-track-tip{background:rgba(6,20,28,.95);border:1px solid rgba(255,255,255,.22);color:#f5e8ce;font-size:11px}
+.historical-province-border{vector-effect:non-scaling-stroke}
+.historical-province-border.schematic{stroke-dasharray:5 4}
+.historical-province-border.approximate{stroke-dasharray:7 5}
+.historical-province-label{background:rgba(7,19,27,.92);border:1px dashed rgba(239,200,117,.7);border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.28);color:#4f391c;font-size:11px;font-weight:700;padding:3px 6px;text-shadow:0 1px 0 rgba(255,255,255,.45)}
+.historical-province-label::before{border-top-color:rgba(239,200,117,.7)}
 @keyframes faction-pulse{0%,100%{transform:scale(.92)}50%{transform:scale(1.08)}}
 @keyframes faction-ring{0%{transform:scale(.55);opacity:.7}75%,100%{transform:scale(1.2);opacity:0}}
 @keyframes faction-march{from{stroke-dashoffset:0}to{stroke-dashoffset:-36}}
