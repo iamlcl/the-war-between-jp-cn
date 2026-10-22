@@ -15,3 +15,5 @@
 `historicalProvinces.js` 是独立的 1937—1945 省级分区注册表。它保留民国、满洲国和蒙疆语境下的省名、政权、存在区间和现代定位映射，并为缺少历史几何时提供后备近似轮廓。
 
 `historical-provinces-1932-1944.geojson` 是应用当前使用的历史省界层，来自 DeanChensj/jiangshan-map 的 `atlas_snapshots.js` `s_roc` 快照（[源仓库](https://github.com/DeanChensj/jiangshan-map)，GPL-3.0）。该快照覆盖 1932—1944 的 29 个省级轮廓，包括察哈尔、绥远、热河和西康；来源项目将其定义为示意性历史轮廓，不能当作逐年测绘。文件保留 `sourceRepo`、`sourceFile`、`sourceSnapshot` 和 `geometryStatus=schematic` 字段；台湾因该快照的 ROC 对照范围未绘制，由本项目标为日本殖民时期的现代几何定位代理。若需要 1937 年逐县可审计边界，仍须按授权接入 CHGIS 时序数据并对照同期行政图。
+
+`forceStrength.js` 的兵力区间是根据报告引用的正面战场、敌后战场、关东军／伪满军和汪伪军编制类公开战史整理的阶段数量级，不是某一份逐月战斗序列。阶段总量先给出低、高区间，再按节点的交通线、战区和指挥中心分布权重分配；节点的装备、军服和编制是用于辨识的常见特征。地图故意把它标为“估算”，不把图标数量解释为逐人点名，也不把节点外推成整省驻军。
